@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="14"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.project.TodayController"
+      styleClass="root">
+
+    <padding>
+        <Insets top="18" right="18" bottom="18" left="18"/>
+    </padding>
+
+    <Label text="Ask Yourself (คำถามประจำวัน)" styleClass="title"/>
+    <Label fx:id="dateLabel" text="วันที่:" styleClass="muted"/>
+
+    <Separator/>
+
+    <Label text="คำถามวันนี้:" styleClass="section"/>
+    <Label fx:id="questionLabel" wrapText="true" styleClass="question"/>
+
+    <Label text="คำตอบของคุณ:" styleClass="section"/>
+    <TextArea fx:id="answerArea" promptText="พิมพ์คำตอบของคุณที่นี่..." wrapText="true" prefRowCount="10"/>
+
+    <HBox spacing="10">
+        <Button text="บันทึก" onAction="#onSave" styleClass="primary"/>
+        <Button text="ดูย้อนหลัง" onAction="#onGoHistory"/>
+    </HBox>
+
+</VBox>
