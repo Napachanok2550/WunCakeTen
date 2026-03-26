@@ -1,9 +1,7 @@
 package com.project;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.application.Platform;
+import javafx.scene.control.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,12 +12,9 @@ import java.util.List;
 
 public class TodayController {
 
-    @FXML
-    private Label dateLabel;
-    @FXML
-    private Label questionLabel;
-    @FXML
-    private TextArea answerArea;
+    @FXML private Label dateLabel;
+    @FXML private Label questionLabel;
+    @FXML private TextArea answerArea;
 
     private LocalDate today;
     private String todayQuestion;
@@ -31,31 +26,45 @@ public class TodayController {
 
         List<String> questions = loadQuestions();
         List<String> shuffled = DataService.loadShuffledQuestions(questions);
-
         int idx = (today.getDayOfYear() - 1) % shuffled.size();
         todayQuestion = shuffled.get(idx);
-
         questionLabel.setText(todayQuestion);
 
-        String user = Session.getUser();
-        List<Entry> entries = DataService.loadEntries(user);
+        // โหลดคำตอบของ user ที่ login
+        List<Entry> entries = DataService.loadEntries(App.currentUser);
         Entry existing = findByDate(entries, today.toString());
-        if (existing != null)
-            answerArea.setText(existing.getAnswer());
-
-        // Auto-save on text change
-        answerArea.textProperty().addListener((obs, oldText, newText) -> onAutoSave());
+        if (existing != null) answerArea.setText(existing.getAnswer());
     }
 
-    private void onAutoSave() {
-        String user = Session.getUser();
-        String answer = answerArea.getText().trim();
-        if (answer.isEmpty())
+    private List<String> loadQuestions() {
+        List<String> out = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(getClass().getResourceAsStream("/com/project/questions.txt"),
+                        StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (!line.isEmpty()) out.add(line);
+            }
+        } catch (Exception ignored) {}
+        return out;
+    }
+
+    private Entry findByDate(List<Entry> entries, String date) {
+        for (Entry e : entries) if (date.equals(e.getDate())) return e;
+        return null;
+    }
+
+    @FXML
+    private void onSave() {
+        String answer = answerArea.getText() == null ? "" : answerArea.getText().trim();
+        if (answer.isEmpty()) {
+            alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
             return;
+        }
 
-        List<Entry> entries = DataService.loadEntries(user);
+        List<Entry> entries = DataService.loadEntries(App.currentUser);
         Entry existing = findByDate(entries, today.toString());
-
         if (existing == null) {
             entries.add(new Entry(today, todayQuestion, answer));
         } else {
@@ -63,30 +72,20 @@ public class TodayController {
             existing.setAnswer(answer);
         }
 
-        DataService.saveEntries(user, entries);
+        DataService.saveEntries(App.currentUser, entries);
+        alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
     }
 
-    private List<String> loadQuestions() {
-        List<String> out = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        getClass().getResourceAsStream("/com/project/questions.txt"),
-                        StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (!line.isEmpty())
-                    out.add(line);
-            }
-        } catch (Exception ignored) {
-        }
-        return out;
+    @FXML
+    private void onGoHistory() {
+        App.setScene("history.fxml");
     }
 
-    private Entry findByDate(List<Entry> entries, String date) {
-        for (Entry e : entries)
-            if (date.equals(e.getDate()))
-                return e;
-        return null;
+    private void alert(Alert.AlertType type, String header, String content) {
+        Alert a = new Alert(type);
+        a.setTitle("Ask Yourself");
+        a.setHeaderText(header);
+        a.setContentText(content);
+        a.showAndWait();
     }
 }

@@ -4,59 +4,32 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+
 import java.util.List;
 
 public class LoginController {
 
-    @FXML
-    private TextField usernameField;
-    @FXML
-    private PasswordField passwordField;
-    @FXML
-    private Label errorLabel;
-
-    @FXML
-    private void onRegister() {
-        String username = usernameField.getText().trim();
-        String password = passwordField.getText().trim();
-
-        if (!validateInput(username, password))
-            return;
-
-        List<User> users = DataService.loadUsers();
-        for (User u : users) {
-            if (u.getUsername().equals(username)) {
-                errorLabel.setText("Username นี้มีอยู่แล้ว");
-                return;
-            }
-        }
-
-        String hash = DataService.hashPassword(password);
-        users.add(new User(username, hash));
-        DataService.saveUsers(users);
-
-        errorLabel.setText("สมัครสำเร็จ! กรุณา Login");
-    }
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private Label errorLabel;
 
     @FXML
     private void onLogin() {
-        String username = usernameField.getText().trim();
-        String password = passwordField.getText().trim();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
 
-        if (!validateInput(username, password))
-            return;
+        if (!validateInput(username, password)) return;
 
-        String hash = DataService.hashPassword(password);
         List<User> users = DataService.loadUsers();
-
         for (User u : users) {
-            if (u.getUsername().equals(username) && u.getPasswordHash().equals(hash)) {
-                Session.setUser(username);
+            if (u.getUsername().equals(username) &&
+                u.getPasswordHash().equals(DataService.hashPassword(password))) {
+
+                App.currentUser = username;
                 App.setScene("today.fxml");
                 return;
             }
         }
-
         errorLabel.setText("Username หรือ Password ไม่ถูกต้อง");
     }
 

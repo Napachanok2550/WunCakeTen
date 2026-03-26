@@ -29,7 +29,7 @@ public class HistoryController {
     }
 
     private void reload() {
-        List<Entry> entries = DataService.loadEntries();
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         entries.sort(Comparator.comparing(Entry::getDate).reversed());
         data.setAll(entries);
     }
@@ -54,9 +54,9 @@ public class HistoryController {
 
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
 
-        List<Entry> entries = DataService.loadEntries();
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         entries.removeIf(e -> e.getId().equals(selected.getId()));
-        DataService.saveEntries(entries);
+        DataService.saveEntries(Session.getUser(), entries);
         reload();
     }
 
@@ -89,14 +89,14 @@ public class HistoryController {
             return;
         }
 
-        List<Entry> entries = DataService.loadEntries();
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         for (Entry e : entries) {
             if (e.getId().equals(selected.getId())) {
                 e.setAnswer(newAnswer);
                 break;
             }
         }
-        DataService.saveEntries(entries);
+        DataService.saveEntries(Session.getUser(), entries);
         reload();
     }
 

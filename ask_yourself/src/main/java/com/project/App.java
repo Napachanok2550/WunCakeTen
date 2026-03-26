@@ -8,12 +8,16 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     private static Stage primaryStage;
+    public static String currentUser; // เก็บ username ที่ login
 
     @Override
     public void start(Stage stage) throws Exception {
+        // สร้าง user เริ่มต้นถ้ายังไม่มี
+        InitUsers.createDefaultUser();
+
         primaryStage = stage;
         stage.setTitle("Ask Yourself - Daily Reflection");
-        setScene("login.fxml");
+        setScene("login.fxml"); // เริ่มที่ login
         stage.show();
     }
 
@@ -23,12 +27,10 @@ public class App extends Application {
             Scene scene = new Scene(loader.load(), 900, 600);
 
             var cssUrl = App.class.getResource("/com/project/app.css");
-            if (cssUrl != null)
-                scene.getStylesheets().add(cssUrl.toExternalForm());
+            if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
 
             primaryStage.setScene(scene);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Failed to load scene: " + fxml, e);
         }
     }
