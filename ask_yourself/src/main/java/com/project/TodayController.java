@@ -20,7 +20,7 @@ public class TodayController {
     private String todayQuestion;
 
     @FXML
-    public void initialize() {
+    public void initialize() { 
         today = LocalDate.now();
         dateLabel.setText("วันที่: " + today);
 
