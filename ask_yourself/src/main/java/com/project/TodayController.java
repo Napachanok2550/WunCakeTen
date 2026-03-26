@@ -28,8 +28,15 @@ public class TodayController {
         if (questions.isEmpty()) {
             todayQuestion = "วันนี้คุณรู้สึกอย่างไร?";
         } else {
-            int idx = Math.floorMod(today.toString().hashCode(), questions.size());
-            todayQuestion = questions.get(idx);
+            List<String> questions = loadQuestions();
+            List<String> shuffled = DataService.loadShuffledQuestions(questions);
+
+            if (shuffled.isEmpty()) {
+                todayQuestion = "วันนี้คุณรู้สึกอย่างไร?";
+            } else {
+                int idx = (today.getDayOfYear() - 1) % shuffled.size();
+                todayQuestion = shuffled.get(idx);
+            }
         }
         questionLabel.setText(todayQuestion);
 
