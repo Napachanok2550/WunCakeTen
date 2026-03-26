@@ -13,7 +13,7 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
         stage.setTitle("Ask Yourself - Daily Reflection");
-        setScene("today.fxml");
+        setScene("login.fxml");
         stage.show();
     }
 
@@ -23,7 +23,8 @@ public class App extends Application {
             Scene scene = new Scene(loader.load(), 900, 600);
 
             var cssUrl = App.class.getResource("/com/project/app.css");
-            if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
+            if (cssUrl != null)
+                scene.getStylesheets().add(cssUrl.toExternalForm());
 
             primaryStage.setScene(scene);
         } catch (Exception e) {
