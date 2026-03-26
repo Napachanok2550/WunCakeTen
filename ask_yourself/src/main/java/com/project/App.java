@@ -28,6 +28,7 @@ public class App extends Application {
 
             primaryStage.setScene(scene);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Failed to load scene: " + fxml, e);
         }
     }

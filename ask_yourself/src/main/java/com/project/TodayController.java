@@ -20,62 +20,104 @@ public class TodayController {
     private String todayQuestion;
 
     @FXML
-    public void initialize() { 
+    public void initialize() {
         today = LocalDate.now();
-        dateLabel.setText("วันที่: " + today);
-
-        List<String> questions = loadQuestions();
-        if (questions.isEmpty()) {
-            todayQuestion = "วันนี้คุณรู้สึกอย่างไร?";
-        } else {
-            List<String> questions = loadQuestions();
-            List<String> shuffled = DataService.loadShuffledQuestions(questions);
-
-            if (shuffled.isEmpty()) {
-                todayQuestion = "วันนี้คุณรู้สึกอย่างไร?";
-            } else {
-                int idx = (today.getDayOfYear() - 1) % shuffled.size();
-                todayQuestion = shuffled.get(idx);
-            }
-        }
-        questionLabel.setText(todayQuestion);
-
-        var entries = DataService.loadEntries();
-        Entry existing = findByDate(entries, today.toString());
-        if (existing != null) answerArea.setText(existing.getAnswer());
+        setupDate();
+        setupQuestion();
+        loadExistingAnswer();
     }
 
+    //Setup Methods//
+
+    private void setupDate() {
+        dateLabel.setText("วันที่: " + today);
+    }
+
+    private void setupQuestion() {
+        List<String> questions = loadQuestions();
+
+        if (questions.isEmpty()) {
+            todayQuestion = getDefaultQuestion();
+        } else {
+            todayQuestion = getQuestionOfTheDay(questions);
+        }
+
+        questionLabel.setText(todayQuestion);
+    }
+
+    private void loadExistingAnswer() {
+        List<Entry> entries = DataService.loadEntries();
+        Entry existing = findByDate(entries, today.toString());
+
+        if (existing != null) {
+            answerArea.setText(existing.getAnswer());
+        }
+    }
+
+    //Logic Methods//
+
+    private String getQuestionOfTheDay(List<String> questions) {
+        List<String> shuffled = DataService.loadShuffledQuestions(questions);
+
+        if (shuffled.isEmpty()) {
+            return getDefaultQuestion();
+        }
+
+        int index = (today.getDayOfYear() - 1) % shuffled.size();
+        return shuffled.get(index);
+    }
+
+    private String getDefaultQuestion() {
+        return "วันนี้คุณรู้สึกอย่างไร?";
+    }
+
+    private Entry findByDate(List<Entry> entries, String date) {
+        return entries.stream()
+                .filter(e -> date.equals(e.getDate()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    //Load Questions//
+
+
     private List<String> loadQuestions() {
-        List<String> out = new ArrayList<>();
+        List<String> result = new ArrayList<>();
+
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(
                         getClass().getResourceAsStream("/com/project/questions.txt"),
                         StandardCharsets.UTF_8))) {
+
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (!line.isEmpty()) out.add(line);
+                if (!line.isEmpty()) {
+                    result.add(line);
+                }
             }
-        } catch (Exception ignored) {}
-        return out;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
-    private Entry findByDate(List<Entry> entries, String date) {
-        for (Entry e : entries) {
-            if (date.equals(e.getDate())) return e;
-        }
-        return null;
-    }
+    //Actions//
 
     @FXML
     private void onSave() {
         String answer = answerArea.getText() == null ? "" : answerArea.getText().trim();
+
         if (answer.isEmpty()) {
-            alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
+            showAlert(Alert.AlertType.WARNING,
+                    "ยังไม่ได้พิมพ์คำตอบ",
+                    "กรุณาพิมพ์คำตอบก่อนบันทึก");
             return;
         }
 
-        var entries = DataService.loadEntries();
+        List<Entry> entries = DataService.loadEntries();
         Entry existing = findByDate(entries, today.toString());
 
         if (existing == null) {
@@ -86,7 +128,10 @@ public class TodayController {
         }
 
         DataService.saveEntries(entries);
-        alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
+
+        showAlert(Alert.AlertType.INFORMATION,
+                "บันทึกสำเร็จ",
+                "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
     }
 
     @FXML
@@ -94,11 +139,13 @@ public class TodayController {
         App.setScene("history.fxml");
     }
 
-    private void alert(Alert.AlertType type, String header, String content) {
-        Alert a = new Alert(type);
-        a.setTitle("Ask Yourself");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
+    //Alert Helper//
+
+    private void showAlert(Alert.AlertType type, String header, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Ask Yourself");
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

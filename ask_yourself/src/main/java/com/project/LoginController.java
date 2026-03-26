@@ -19,11 +19,11 @@ public class LoginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        // ✅ Validation
+        //Validation
         if (!validateInput(username, password))
             return;
 
-        // 🔐 mock login (กำหนดเองก่อน)
+        //mock login (กำหนดเองก่อน)
         if (username.equals("admin") && password.equals("1234")) {
             App.setScene("today.fxml");
         } else {
@@ -33,7 +33,7 @@ public class LoginController {
 
     private boolean validateInput(String username, String password) {
 
-        // 1. ห้ามว่าง
+        //ห้ามว่าง
         if (username == null || username.trim().isEmpty()) {
             errorLabel.setText("กรุณากรอก Username");
             return false;
@@ -44,13 +44,13 @@ public class LoginController {
             return false;
         }
 
-        // 2. Username ต้องเป็นตัวอักษร/ตัวเลขเท่านั้น
+        //Username ต้องเป็นตัวอักษร/ตัวเลขเท่านั้น
         if (!username.matches("^[a-zA-Z0-9]+$")) {
             errorLabel.setText("Username ต้องเป็น a-z หรือ 0-9 เท่านั้น");
             return false;
         }
 
-        // 3. Password อย่างน้อย 4 ตัว
+        //Password อย่างน้อย 4 ตัว
         if (password.length() < 4) {
             errorLabel.setText("Password ต้องมีอย่างน้อย 4 ตัว");
             return false;
