@@ -29,6 +29,7 @@ public class App extends Application {
             var cssUrl = App.class.getResource("/com/project/app.css");
             if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
 
+            
             primaryStage.setScene(scene);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load scene: " + fxml, e);
