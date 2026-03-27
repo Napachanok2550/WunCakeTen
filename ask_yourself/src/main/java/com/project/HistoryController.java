@@ -11,10 +11,14 @@ import java.util.List;
 
 public class HistoryController {
 
-    @FXML private TableView<Entry> table;
-    @FXML private TableColumn<Entry, String> colDate;
-    @FXML private TableColumn<Entry, String> colQuestion;
-    @FXML private TableColumn<Entry, String> colAnswer;
+    @FXML
+    private TableView<Entry> table;
+    @FXML
+    private TableColumn<Entry, String> colDate;
+    @FXML
+    private TableColumn<Entry, String> colQuestion;
+    @FXML
+    private TableColumn<Entry, String> colAnswer;
 
     private final ObservableList<Entry> data = FXCollections.observableArrayList();
 
@@ -43,7 +47,7 @@ public class HistoryController {
     private void onDelete() {
         Entry selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการลบ");
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการลบ");
             return;
         }
 
@@ -52,7 +56,8 @@ public class HistoryController {
         confirm.setHeaderText("ต้องการลบรายการนี้ใช่ไหม?");
         confirm.setContentText("วันที่: " + selected.getDate());
 
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK)
+            return;
 
         List<Entry> entries = DataService.loadEntries(Session.getUser());
         entries.removeIf(e -> e.getId().equals(selected.getId()));
@@ -64,7 +69,7 @@ public class HistoryController {
     private void onEdit() {
         Entry selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการแก้ไข");
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการแก้ไข");
             return;
         }
 
@@ -81,11 +86,12 @@ public class HistoryController {
         dialog.setResultConverter(bt -> bt == ButtonType.OK ? area.getText() : null);
 
         String newAnswer = dialog.showAndWait().orElse(null);
-        if (newAnswer == null) return;
+        if (newAnswer == null)
+            return;
 
         newAnswer = newAnswer.trim();
         if (newAnswer.isEmpty()) {
-            alert(Alert.AlertType.WARNING, "คำตอบว่าง", "คำตอบต้องไม่เป็นค่าว่าง");
+            UIUtil.alert(Alert.AlertType.WARNING, "คำตอบว่าง", "คำตอบต้องไม่เป็นค่าว่าง");
             return;
         }
 
@@ -96,15 +102,8 @@ public class HistoryController {
                 break;
             }
         }
+
         DataService.saveEntries(Session.getUser(), entries);
         reload();
-    }
-
-    private void alert(Alert.AlertType type, String header, String content) {
-        Alert a = new Alert(type);
-        a.setTitle("Ask Yourself");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
     }
 }

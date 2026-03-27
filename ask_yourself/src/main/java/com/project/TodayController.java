@@ -12,9 +12,12 @@ import java.util.List;
 
 public class TodayController {
 
-    @FXML private Label dateLabel;
-    @FXML private Label questionLabel;
-    @FXML private TextArea answerArea;
+    @FXML
+    private Label dateLabel;
+    @FXML
+    private Label questionLabel;
+    @FXML
+    private TextArea answerArea;
 
     private LocalDate today;
     private String todayQuestion;
@@ -30,10 +33,11 @@ public class TodayController {
         todayQuestion = shuffled.get(idx);
         questionLabel.setText(todayQuestion);
 
-        // โหลดคำตอบของ user ที่ login
-        List<Entry> entries = DataService.loadEntries(App.currentUser);
+        // ✅ ใช้ Session
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         Entry existing = findByDate(entries, today.toString());
-        if (existing != null) answerArea.setText(existing.getAnswer());
+        if (existing != null)
+            answerArea.setText(existing.getAnswer());
     }
 
     private List<String> loadQuestions() {
@@ -44,14 +48,19 @@ public class TodayController {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (!line.isEmpty()) out.add(line);
+                if (!line.isEmpty())
+                    out.add(line);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return out;
     }
 
     private Entry findByDate(List<Entry> entries, String date) {
-        for (Entry e : entries) if (date.equals(e.getDate())) return e;
+        for (Entry e : entries) {
+            if (date.equals(e.getDate()))
+                return e;
+        }
         return null;
     }
 
@@ -59,12 +68,13 @@ public class TodayController {
     private void onSave() {
         String answer = answerArea.getText() == null ? "" : answerArea.getText().trim();
         if (answer.isEmpty()) {
-            alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
             return;
         }
 
-        List<Entry> entries = DataService.loadEntries(App.currentUser);
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         Entry existing = findByDate(entries, today.toString());
+
         if (existing == null) {
             entries.add(new Entry(today, todayQuestion, answer));
         } else {
@@ -72,20 +82,12 @@ public class TodayController {
             existing.setAnswer(answer);
         }
 
-        DataService.saveEntries(App.currentUser, entries);
-        alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
+        DataService.saveEntries(Session.getUser(), entries);
+        UIUtil.alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
     }
 
     @FXML
     private void onGoHistory() {
         App.setScene("history.fxml");
-    }
-
-    private void alert(Alert.AlertType type, String header, String content) {
-        Alert a = new Alert(type);
-        a.setTitle("Ask Yourself");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
     }
 }
