@@ -7,14 +7,17 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TodayController {
 
     @FXML private Label dateLabel;
     @FXML private Label questionLabel;
     @FXML private TextArea answerArea;
+
+    // ✅ emoji mood
+    @FXML private ToggleGroup moodGroup;
+    private String selectedMood = "😐"; // default
 
     private LocalDate today;
     private String todayQuestion;
@@ -25,22 +28,44 @@ public class TodayController {
         dateLabel.setText("วันที่: " + today);
 
         List<String> questions = loadQuestions();
-        List<String> shuffled = DataService.loadShuffledQuestions(questions);
-        int idx = (today.getDayOfYear() - 1) % shuffled.size();
-        todayQuestion = shuffled.get(idx);
+
+        // ✅ สุ่มแบบไม่ซ้ำทั้งปี
+        int year = today.getYear();
+        Random random = new Random(year);
+        Collections.shuffle(questions, random);
+
+        int idx = (today.getDayOfYear() - 1) % questions.size();
+        todayQuestion = questions.get(idx);
         questionLabel.setText(todayQuestion);
 
-        // โหลดคำตอบของ user ที่ login
-        List<Entry> entries = DataService.loadEntries(App.currentUser);
+        // debug (ลบได้)
+        System.out.println("Total questions: " + questions.size());
+        System.out.println("Today question: " + todayQuestion);
+
+        // โหลดคำตอบเดิม
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         Entry existing = findByDate(entries, today.toString());
-        if (existing != null) answerArea.setText(existing.getAnswer());
+
+        if (existing != null) {
+            answerArea.setText(existing.getAnswer());
+
+            // โหลด mood เดิม
+            if (existing.getMood() != null) {
+                selectedMood = existing.getMood();
+                setSelectedMoodInUI(selectedMood);
+            }
+        }
     }
 
+    // -----------------------
+    // load questions
+    // -----------------------
     private List<String> loadQuestions() {
         List<String> out = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(getClass().getResourceAsStream("/com/project/questions.txt"),
                         StandardCharsets.UTF_8))) {
+
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
@@ -50,42 +75,71 @@ public class TodayController {
         return out;
     }
 
+    // -----------------------
+    // find entry by date
+    // -----------------------
     private Entry findByDate(List<Entry> entries, String date) {
-        for (Entry e : entries) if (date.equals(e.getDate())) return e;
+        for (Entry e : entries) {
+            if (date.equals(e.getDate())) return e;
+        }
         return null;
     }
 
+    // -----------------------
+    // emoji click
+    // -----------------------
+    @FXML
+    private void onSelectMood() {
+        Toggle selected = moodGroup.getSelectedToggle();
+        if (selected != null) {
+            selectedMood = ((RadioButton) selected).getText();
+        }
+    }
+
+    // set mood จากข้อมูลเก่า
+    private void setSelectedMoodInUI(String mood) {
+        for (Toggle t : moodGroup.getToggles()) {
+            RadioButton rb = (RadioButton) t;
+            if (rb.getText().equals(mood)) {
+                rb.setSelected(true);
+                break;
+            }
+        }
+    }
+
+    // -----------------------
+    // save
+    // -----------------------
     @FXML
     private void onSave() {
         String answer = answerArea.getText() == null ? "" : answerArea.getText().trim();
+
         if (answer.isEmpty()) {
-            alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้พิมพ์คำตอบ", "กรุณาพิมพ์คำตอบก่อนบันทึก");
             return;
         }
 
-        List<Entry> entries = DataService.loadEntries(App.currentUser);
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
         Entry existing = findByDate(entries, today.toString());
+
         if (existing == null) {
-            entries.add(new Entry(today, todayQuestion, answer));
+            entries.add(new Entry(today, todayQuestion, answer, selectedMood)); // ✅ mood
         } else {
             existing.setQuestion(todayQuestion);
             existing.setAnswer(answer);
+            existing.setMood(selectedMood); // ✅ update mood
         }
 
-        DataService.saveEntries(App.currentUser, entries);
-        alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
+        DataService.saveEntries(Session.getUser(), entries);
+
+        UIUtil.alert(Alert.AlertType.INFORMATION, "บันทึกสำเร็จ", "บันทึกคำตอบของวันนี้เรียบร้อยแล้ว");
     }
 
+    // -----------------------
+    // go history
+    // -----------------------
     @FXML
     private void onGoHistory() {
         App.setScene("history.fxml");
-    }
-
-    private void alert(Alert.AlertType type, String header, String content) {
-        Alert a = new Alert(type);
-        a.setTitle("Ask Yourself");
-        a.setHeaderText(header);
-        a.setContentText(content);
-        a.showAndWait();
     }
 }

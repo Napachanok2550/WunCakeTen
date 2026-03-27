@@ -10,6 +10,11 @@
       fx:controller="com.project.TodayController"
       styleClass="root">
 
+    <!-- ✅ ตรงนี้เท่านั้น -->
+    <fx:define>
+        <ToggleGroup fx:id="moodGroup"/>
+    </fx:define>
+
     <padding>
         <Insets top="18" right="18" bottom="18" left="18"/>
     </padding>
@@ -24,6 +29,16 @@
 
     <Label text="คำตอบของคุณ:" styleClass="section"/>
     <TextArea fx:id="answerArea" promptText="พิมพ์คำตอบของคุณที่นี่..." wrapText="true" prefRowCount="10"/>
+
+    <Label text="วันนี้คุณรู้สึกยังไง?" styleClass="section"/>
+
+    <HBox spacing="10">
+        <RadioButton text="😊" toggleGroup="$moodGroup" onAction="#onSelectMood"/>
+        <RadioButton text="😐" toggleGroup="$moodGroup" onAction="#onSelectMood"/>
+        <RadioButton text="😢" toggleGroup="$moodGroup" onAction="#onSelectMood"/>
+        <RadioButton text="😡" toggleGroup="$moodGroup" onAction="#onSelectMood"/>
+        <RadioButton text="😴" toggleGroup="$moodGroup" onAction="#onSelectMood"/>
+    </HBox>
 
     <HBox spacing="10">
         <Button text="บันทึก" onAction="#onSave" styleClass="primary"/>
