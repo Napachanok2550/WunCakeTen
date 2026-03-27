@@ -1,34 +1,114 @@
-<?xml version="1.0" encoding="UTF-8"?>
+package com.project;
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 
-<VBox spacing="12"
-      xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.project.HistoryController"
-      styleClass="root">
+import java.util.Comparator;
+import java.util.List;
 
-    <padding>
-        <Insets top="18" right="18" bottom="18" left="18"/>
-    </padding>
+public class HistoryController {
 
-    <Label text="ประวัติย้อนหลัง" styleClass="title"/>
+    @FXML private TableView<Entry> table;
+    @FXML private TableColumn<Entry, String> colDate;
+    @FXML private TableColumn<Entry, String> colQuestion;
+    @FXML private TableColumn<Entry, String> colAnswer;
 
-    <TableView fx:id="table" prefHeight="420">
-        <columns>
-            <TableColumn fx:id="colDate" text="วันที่" prefWidth="120"/>
-            <TableColumn fx:id="colQuestion" text="คำถาม" prefWidth="340"/>
-            <TableColumn fx:id="colAnswer" text="คำตอบ" prefWidth="380"/>
-        </columns>
-    </TableView>
+    // ✅ เพิ่ม
+    @FXML private TableColumn<Entry, String> colMood;
 
-    <HBox spacing="10">
-        <Button text="แก้ไข" onAction="#onEdit"/>
-        <Button text="ลบ" onAction="#onDelete"/>
-        <Pane HBox.hgrow="ALWAYS"/>
-        <Button text="กลับ" onAction="#onBack"/>
-    </HBox>
+    private final ObservableList<Entry> data = FXCollections.observableArrayList();
 
-</VBox>
+    @FXML
+    public void initialize() {
+        colDate.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDate()));
+        colQuestion.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getQuestion()));
+        colAnswer.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getAnswer()));
+
+        // ✅ แสดง emoji
+        colMood.setCellValueFactory(c -> {
+            String mood = c.getValue().getMood();
+            return new SimpleStringProperty(mood == null ? "" : mood);
+        });
+
+        table.setItems(data);
+        reload();
+    }
+
+    private void reload() {
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
+        entries.sort(Comparator.comparing(Entry::getDate).reversed());
+        data.setAll(entries);
+    }
+
+    @FXML
+    private void onBack() {
+        App.setScene("today.fxml");
+    }
+
+    @FXML
+    private void onDelete() {
+        Entry selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการลบ");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("ยืนยันการลบ");
+        confirm.setHeaderText("ต้องการลบรายการนี้ใช่ไหม?");
+        confirm.setContentText("วันที่: " + selected.getDate());
+
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK)
+            return;
+
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
+        entries.removeIf(e -> e.getId().equals(selected.getId()));
+        DataService.saveEntries(Session.getUser(), entries);
+        reload();
+    }
+
+    @FXML
+    private void onEdit() {
+        Entry selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UIUtil.alert(Alert.AlertType.WARNING, "ยังไม่ได้เลือกข้อมูล", "กรุณาเลือกข้อมูลที่ต้องการแก้ไข");
+            return;
+        }
+
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("แก้ไขคำตอบ");
+        dialog.setHeaderText("วันที่: " + selected.getDate() + "\nคำถาม: " + selected.getQuestion());
+
+        TextArea area = new TextArea(selected.getAnswer());
+        area.setWrapText(true);
+        area.setPrefRowCount(8);
+
+        dialog.getDialogPane().setContent(area);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.setResultConverter(bt -> bt == ButtonType.OK ? area.getText() : null);
+
+        String newAnswer = dialog.showAndWait().orElse(null);
+        if (newAnswer == null)
+            return;
+
+        newAnswer = newAnswer.trim();
+        if (newAnswer.isEmpty()) {
+            UIUtil.alert(Alert.AlertType.WARNING, "คำตอบว่าง", "คำตอบต้องไม่เป็นค่าว่าง");
+            return;
+        }
+
+        List<Entry> entries = DataService.loadEntries(Session.getUser());
+        for (Entry e : entries) {
+            if (e.getId().equals(selected.getId())) {
+                e.setAnswer(newAnswer);
+                break;
+            }
+        }
+
+        DataService.saveEntries(Session.getUser(), entries);
+        reload();
+    }
+}
