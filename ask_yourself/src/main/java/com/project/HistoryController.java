@@ -11,14 +11,13 @@ import java.util.List;
 
 public class HistoryController {
 
-    @FXML
-    private TableView<Entry> table;
-    @FXML
-    private TableColumn<Entry, String> colDate;
-    @FXML
-    private TableColumn<Entry, String> colQuestion;
-    @FXML
-    private TableColumn<Entry, String> colAnswer;
+    @FXML private TableView<Entry> table;
+    @FXML private TableColumn<Entry, String> colDate;
+    @FXML private TableColumn<Entry, String> colQuestion;
+    @FXML private TableColumn<Entry, String> colAnswer;
+
+    // ✅ เพิ่ม
+    @FXML private TableColumn<Entry, String> colMood;
 
     private final ObservableList<Entry> data = FXCollections.observableArrayList();
 
@@ -27,6 +26,12 @@ public class HistoryController {
         colDate.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDate()));
         colQuestion.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getQuestion()));
         colAnswer.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getAnswer()));
+
+        // ✅ แสดง emoji
+        colMood.setCellValueFactory(c -> {
+            String mood = c.getValue().getMood();
+            return new SimpleStringProperty(mood == null ? "" : mood);
+        });
 
         table.setItems(data);
         reload();
