@@ -10,7 +10,6 @@
       fx:controller="com.project.TodayController"
       styleClass="root">
 
-    <!-- ✅ ตรงนี้เท่านั้น -->
     <fx:define>
         <ToggleGroup fx:id="moodGroup"/>
     </fx:define>
@@ -28,7 +27,10 @@
     <Label fx:id="questionLabel" wrapText="true" styleClass="question"/>
 
     <Label text="คำตอบของคุณ:" styleClass="section"/>
-    <TextArea fx:id="answerArea" promptText="พิมพ์คำตอบของคุณที่นี่..." wrapText="true" prefRowCount="10"/>
+    <TextArea fx:id="answerArea"
+              promptText="พิมพ์คำตอบของคุณที่นี่..."
+              wrapText="true"
+              prefRowCount="10"/>
 
     <Label text="วันนี้คุณรู้สึกยังไง?" styleClass="section"/>
 
@@ -44,5 +46,9 @@
         <Button text="บันทึก" onAction="#onSave" styleClass="primary"/>
         <Button text="ดูย้อนหลัง" onAction="#onGoHistory"/>
     </HBox>
+
+    <Button text="📊 สรุปรายอาทิตย์"
+            onAction="#onGoWeekly"
+            styleClass="secondary"/>
 
 </VBox>

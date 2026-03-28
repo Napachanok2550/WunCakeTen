@@ -15,7 +15,6 @@ public class TodayController {
     @FXML private Label questionLabel;
     @FXML private TextArea answerArea;
 
-    // ✅ emoji mood
     @FXML private ToggleGroup moodGroup;
     private String selectedMood = "😐"; // default
 
@@ -29,7 +28,7 @@ public class TodayController {
 
         List<String> questions = loadQuestions();
 
-        // ✅ สุ่มแบบไม่ซ้ำทั้งปี
+        // ✅ random แบบ stable (เปลี่ยนทุกวัน แต่ไม่มั่ว)
         int year = today.getYear();
         Random random = new Random(year);
         Collections.shuffle(questions, random);
@@ -38,18 +37,13 @@ public class TodayController {
         todayQuestion = questions.get(idx);
         questionLabel.setText(todayQuestion);
 
-        // debug (ลบได้)
-        System.out.println("Total questions: " + questions.size());
-        System.out.println("Today question: " + todayQuestion);
-
-        // โหลดคำตอบเดิม
+        // โหลดข้อมูลเดิม
         List<Entry> entries = DataService.loadEntries(Session.getUser());
         Entry existing = findByDate(entries, today.toString());
 
         if (existing != null) {
             answerArea.setText(existing.getAnswer());
 
-            // โหลด mood เดิม
             if (existing.getMood() != null) {
                 selectedMood = existing.getMood();
                 setSelectedMoodInUI(selectedMood);
@@ -58,12 +52,13 @@ public class TodayController {
     }
 
     // -----------------------
-    // load questions
+    // โหลดคำถาม
     // -----------------------
     private List<String> loadQuestions() {
         List<String> out = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("/com/project/questions.txt"),
+                new InputStreamReader(
+                        getClass().getResourceAsStream("/com/project/questions.txt"),
                         StandardCharsets.UTF_8))) {
 
             String line;
@@ -71,12 +66,14 @@ public class TodayController {
                 line = line.trim();
                 if (!line.isEmpty()) out.add(line);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return out;
     }
 
     // -----------------------
-    // find entry by date
+    // หา entry ของวัน
     // -----------------------
     private Entry findByDate(List<Entry> entries, String date) {
         for (Entry e : entries) {
@@ -86,7 +83,7 @@ public class TodayController {
     }
 
     // -----------------------
-    // emoji click
+    // เลือก emoji
     // -----------------------
     @FXML
     private void onSelectMood() {
@@ -96,7 +93,6 @@ public class TodayController {
         }
     }
 
-    // set mood จากข้อมูลเก่า
     private void setSelectedMoodInUI(String mood) {
         for (Toggle t : moodGroup.getToggles()) {
             RadioButton rb = (RadioButton) t;
@@ -123,11 +119,11 @@ public class TodayController {
         Entry existing = findByDate(entries, today.toString());
 
         if (existing == null) {
-            entries.add(new Entry(today, todayQuestion, answer, selectedMood)); // ✅ mood
+            entries.add(new Entry(today, todayQuestion, answer, selectedMood));
         } else {
             existing.setQuestion(todayQuestion);
             existing.setAnswer(answer);
-            existing.setMood(selectedMood); // ✅ update mood
+            existing.setMood(selectedMood);
         }
 
         DataService.saveEntries(Session.getUser(), entries);
@@ -136,10 +132,15 @@ public class TodayController {
     }
 
     // -----------------------
-    // go history
+    // navigation
     // -----------------------
     @FXML
     private void onGoHistory() {
         App.setScene("history.fxml");
+    }
+
+    @FXML
+    private void onGoWeekly() {
+        App.setScene("weekly.fxml");
     }
 }

@@ -12,12 +12,9 @@ import java.util.Map;
 
 public class WeeklyController {
 
-    @FXML
-    private Label weekLabel;
-    @FXML
-    private Label summaryLabel;
-    @FXML
-    private Label moodBreakdownLabel;
+    @FXML private Label weekLabel;
+    @FXML private Label summaryLabel;
+    @FXML private Label moodBreakdownLabel;
 
     @FXML
     public void initialize() {

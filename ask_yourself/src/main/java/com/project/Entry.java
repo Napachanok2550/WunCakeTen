@@ -32,4 +32,8 @@ public class Entry {
     public void setQuestion(String question) { this.question = question; }
     public void setAnswer(String answer) { this.answer = answer; }
     public void setMood(String mood) { this.mood = mood; } // ✅
+
+    public java.time.LocalDate getLocalDate() {
+    return java.time.LocalDate.parse(this.date);
+}
 }

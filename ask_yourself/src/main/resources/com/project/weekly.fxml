@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="16"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.project.WeeklyController"
+      styleClass="root">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="📊 Weekly Summary" styleClass="title"/>
+
+    <Label fx:id="weekLabel" text="สัปดาห์" styleClass="section"/>
+
+    <Separator/>
+
+    <Label text="สรุปอารมณ์" styleClass="section"/>
+    <Label fx:id="summaryLabel" text="-" wrapText="true"/>
+
+    <Label text="รายละเอียด" styleClass="section"/>
+    <Label fx:id="moodBreakdownLabel" text="-" wrapText="true"/>
+
+    <Button text="⬅ กลับ" onAction="#onBack"/>
+
+</VBox>
